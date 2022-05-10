@@ -1,0 +1,5 @@
+import turtle
+for i in range(1, 100000, 16):
+    turtle.forward(i*0.0001)
+    turtle.left(1)
+turtle.down()
