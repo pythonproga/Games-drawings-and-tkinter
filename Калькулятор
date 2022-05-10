@@ -1,0 +1,189 @@
+# -*- coding: utf8 -*-
+import tkinter.messagebox
+from tkinter import *
+from tkinter import font
+import keyboard
+
+root = Tk()
+root.title("Калькулятор")
+root["bg"] = "white"
+root.geometry("400x480")
+#root.resizable(width=False, height=False)
+
+frame = Frame(root, bg = "orange")
+frame.place(relheight=1, relwidth=1, relx=0, rely=0)
+
+
+#не даём ввести буквы
+fl=False
+simv = ["*", "/", "//", "+", "-", "%", "**", ".", "round()", "(", ")"]
+def validate(new_value, id):
+    global fl
+    if id =="1":
+        ret = new_value == "" or new_value.isnumeric() or new_value in simv or fl
+    elif id =="0":
+        ret =True
+    fl = False
+    return ret
+
+
+vcmd = (root.register(validate), '%S', "%d")
+shrift = font.Font(family='Arial', size=40)
+loginInput = Entry(frame, validate="key", validatecommand=vcmd, justify=CENTER, font = shrift, bg="white", fg="black", bd = 0)
+loginInput.place(relwidth=0.8, relheight=0.1666666666666666, relx=0, rely=0)
+
+#функция, которая добавляет цифры и знаки в основное поле
+def btn_click(text, func=False):
+    loginInput.insert(INSERT, text)
+
+    #ЕСЛИ ЭТО ФУНКЦИЯ, ТО СМЕЩАЕМ КУРСОР НА ОДИН НАЗАЛ (В СКОБОЧКИ)
+    if func==True:
+        loginInput.icursor(loginInput.index(INSERT) - 1)
+
+#функция для выполнения действия по нажатию кнопки "="
+def btn_rav():
+    try:
+        zn = loginInput.get()
+        loginInput.delete(0, END)
+        global fl
+        fl = True
+        rez = eval(str(zn))
+        loginInput.insert(0, rez)
+
+    except:
+        tkinter.messagebox.showerror("Ошибка", "!!! ВНИМАНИЕ !!!\nОШИБКА")
+        loginInput.delete(0, END)
+
+#функция для того, чтобы по нажатию Enter действие выполнялось
+def btn_ra(event):
+    buttonpravno.invoke()
+
+#функция для очистки основного поля
+def ochist():
+    loginInput.delete(0, END)
+
+#функция меняет шрифт в зависимости от размера окна
+def font_change(event):
+    heigth=frame.winfo_height()
+    width=frame.winfo_width()
+    scale = min(heigth, width)
+    font_size=int(scale/10)
+    shrift.configure(size=font_size)
+
+#очищаем поле по кнопке "<"
+def delet():
+    #если видем команду round, то удаляем её полностью
+    if loginInput.get()[loginInput.index(INSERT)-5:loginInput.index(INSERT)]=="round":
+        loginInput.delete(loginInput.index(INSERT) - 5, INSERT)
+    #когда удаляем скобочку "(", сразу же удаляем её пару ")"
+    elif loginInput.get()[loginInput.index(INSERT)-1] == "(":
+        scob = 1
+        fdoind = loginInput.index(INSERT)
+        fdzind = loginInput.index(INSERT)
+        while scob!=0:
+            fdo = loginInput.get().find("(", fdoind)
+            fdz = loginInput.get().find(")", fdzind)
+            if fdz==-1:
+                loginInput.delete(loginInput.index(INSERT) - 1)
+                break
+            if not fdo>fdz:
+                if fdo != -1:
+                    scob +=1
+            if fdz !=-1:
+                scob -=1
+            fdoind = fdo+1
+            fdzind = fdz+1
+        else:
+            loginInput.delete(loginInput.index(INSERT) - 1)
+            loginInput.delete(fdz-1)
+    # когда удаляем скобочку ")", сразу же удаляем её пару "("
+    elif loginInput.get()[loginInput.index(INSERT)-1] == ")":
+        scob = 1
+        fdoind = loginInput.index(INSERT)
+        fdzind = loginInput.index(INSERT)
+        while scob != 0:
+            fdo = loginInput.get().rfind("(", 0, fdoind-1)
+            fdz = loginInput.get().rfind(")",0,  fdzind-1)
+            if fdo==-1:
+                loginInput.delete(loginInput.index(INSERT) - 1)
+                break
+            if fdz > fdo:
+                if fdz != -1:
+                    scob += 1
+            if fdo != -1:
+                scob -= 1
+            fdoind = fdo
+            fdzind = fdz
+        else:
+            loginInput.delete(loginInput.index(INSERT) - 1)
+            loginInput.delete(fdo)
+    #а иначе просто удаляем последний символ
+    else:
+        loginInput.delete(loginInput.index(INSERT)-1)
+
+#отслеживаем изменение размера окна
+root.bind('<Configure>', font_change)
+
+#отслеживаем нажатие клавиши Enter
+root.bind('<Return>', btn_ra)
+
+#на клавишу равно тоже выводим результат
+root.bind("=", btn_ra)
+
+#блокируем клавишу BackSpace и вызываем функцию delet
+keyboard.add_hotkey("BackSpace", delet, suppress =True)
+
+#создаём кнопки
+buttonc = Button(frame, text="C", bg="red", fg="black", bd=0, font=shrift, command=ochist)
+buttonc.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.8, rely=0)
+
+buttonsko = Button(frame, text="(", bg="blue", fg="black", bd=0, font=shrift, command=lambda: btn_click("("))
+buttonsko.place(relwidth=0.20, relheight=0.1666666666666666, relx=0, rely=0.1666666666666666)
+buttonsko = Button(frame, text=")", bg="blue", fg="black", bd=0, font=shrift, command=lambda: btn_click(")"))
+buttonsko.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.2, rely=0.1666666666666666)
+buttoncel = Button(frame, text="//", bg="blue", fg="black", bd=0, font=shrift, command=lambda : btn_click("//"))
+buttoncel.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.4, rely=0.1666666666666666)
+buttondel = Button(frame, text="/", bg="blue", fg="black", bd=0, font=shrift, command=lambda: btn_click("/"))
+buttondel.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.6, rely=0.1666666666666666)
+buttondel = Button(frame, text="<<", bg="red", fg="black", bd=0, font=shrift, command=delet)
+buttondel.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.8, rely=0.1666666666666666)
+
+button7 = Button(frame, text=7, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(7))
+button7.place(relwidth=0.20, relheight=0.1666666666666666, relx=0, rely=0.1666666666666666*2)
+button8 = Button(frame, text=8, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(8))
+button8.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.20, rely=0.1666666666666666*2)
+button9 = Button(frame, text=9, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(9))
+button9.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.40, rely=0.1666666666666666*2)
+buttonmin = Button(frame, text="-", bg="blue", fg="black", bd=0, font=shrift, command=lambda: btn_click("-"))
+buttonmin.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.6, rely=0.1666666666666666*2)
+buttonymno = Button(frame, text="*", bg="blue", fg="black", bd=0, font=shrift, command=lambda: btn_click("*"))
+buttonymno.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.8, rely=0.1666666666666666*2)
+
+button4 = Button(frame, text=4, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(4))
+button4.place(relwidth=0.20, relheight=0.1666666666666666, relx=0, rely=0.1666666666666666*3)
+button5 = Button(frame, text=5, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(5))
+button5.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.20, rely=0.1666666666666666*3)
+button6 = Button(frame, text=6, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(6))
+button6.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.4, rely=0.1666666666666666*3)
+buttonplus = Button(frame, text="+", bg="blue", fg="black", bd=0, font=shrift, command=lambda: btn_click("+"))
+buttonplus.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.6, rely=0.1666666666666666*3)
+buttonpr = Button(frame, text="%", bg="blue", fg="black", bd=0, font=shrift, command=lambda : btn_click("%"))
+buttonpr.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.8, rely=0.1666666666666666*3)
+
+button1 = Button(frame, text=1, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(1))
+button1.place(relwidth=0.2, relheight=0.1666666666666666, relx=0, rely=0.1666666666666666*4)
+button2 = Button(frame, text=2, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(2))
+button2.place(relwidth=0.2, relheight=0.1666666666666666, relx=0.2, rely=0.1666666666666666*4)
+button3 = Button(frame, text=3, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(3))
+button3.place(relwidth=0.2, relheight=0.1666666666666666, relx=0.4, rely=0.1666666666666666*4)
+buttonrou = Button(frame, text="round", bg="purple", fg="black", bd=0, font=shrift, command=lambda : btn_click("round()", func=True))
+buttonrou.place(relwidth=0.4, relheight=0.1666666666666666, relx=0.6, rely=0.1666666666666666*4)
+
+button0 = Button(frame, text=0, bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click(0))
+button0.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.2, rely=0.1666666666666666*5)
+buttont = Button(frame, text=".", bg="orange", fg="red", bd=0, font=shrift, command=lambda: btn_click("."))
+buttont.place(relwidth=0.20, relheight=0.1666666666666666, relx=0.4, rely=0.1666666666666666*5)
+buttonpravno = Button(frame, text="=", bg="green", fg="black", bd=0, font=shrift, command=btn_rav)
+buttonpravno.place(relwidth=0.4, relheight=0.1666666666666666, relx=0.6, rely=0.1666666666666666*5)
+
+root.mainloop()
