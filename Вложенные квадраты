@@ -1,0 +1,30 @@
+from pyfiglet import Figlet
+from termcolor import colored
+import time
+
+Creator = Figlet(font="bubble_b")
+print(colored(Creator.renderText("KOLOMIETC MAXIM"), 'red'))
+time.sleep(5)
+
+
+Start = Figlet(font='banner3-D')
+print(colored(Start.renderText("Let`s start"), 'green'))
+
+
+Text = (input("Введите текст баннера\Enter the banner text 'only ENG'  >>>"))
+Color = (input("Введите цвет банера\Enter the banner color 'only ENG' >>>"))
+print("Перед тем как писать шрифт найдите их названия в инетернете\Before you write a font, find their names on the Internet>>>  <3")
+time.sleep(2)
+print('Are you ready?')
+time.sleep(1)
+Font = (input('введите шрифт\enter the font  "only ENG"  >>>'))
+
+
+print('Loading...')
+time.sleep(3)
+print('please wait...')
+time.sleep(2)
+print("Testing...")
+time.sleep(3)
+Banner = Figlet(font= Font)
+print(colored(Banner.renderText(Text), Color))
